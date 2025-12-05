@@ -1,0 +1,1 @@
+python ../../../script/run_GalaxyDock2_heme.py -d ../../../../GalaxyDock2_HEME -p ../input_pdb_mol2/1W0G.pdb -l ../input_pdb_mol2/MYT_sup.mol2 --random_seed 0

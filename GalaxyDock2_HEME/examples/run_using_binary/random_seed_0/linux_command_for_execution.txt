@@ -1,0 +1,1 @@
+../../../../GalaxyDock2_HEME/bin/ligdock galaxydock.in
