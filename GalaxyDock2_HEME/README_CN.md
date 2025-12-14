@@ -164,15 +164,99 @@ python GalaxyDock2_HEME/script/run_GalaxyDock2_heme.py \
 
 ---
 
-## 5. 结果分析
+## 5. 批量对接（虚拟筛选）
 
-### 5.1 查看能量排名
+### 5.1 概述
+
+`batch_docking.py` 脚本支持对多分子mol2库进行并行对接，适用于大规模虚拟筛选。
+
+**功能特点**：
+- 自动拆分多分子mol2文件
+- 多进程并行对接（基于subprocess）
+- 自定义最大进程数
+- 自动汇总结果到CSV和mol2文件
+- 仅保留必要的输出文件（节省磁盘空间）
+
+### 5.2 基本用法
+
+```bash
+conda activate dock
+export PATH="/opt/share/miniconda3/envs/dock/bin:$PATH"
+
+python GalaxyDock2_HEME/script/batch_docking.py \
+    --protein data/protein/pig_CYP_merged.pdb \
+    --ligand_db data/mols/library.mol2 \
+    --output ./docking_results \
+    --heme_res_num 600 \
+    --chain A \
+    --n_workers 8
+```
+
+### 5.3 参数说明
+
+| 参数 | 必需 | 说明 | 默认值 |
+|------|------|------|--------|
+| `-p, --protein` | 是 | 蛋白PDB文件 | - |
+| `-l, --ligand_db` | 是 | 配体库mol2文件（可含多分子） | - |
+| `-o, --output` | 是 | 输出目录 | - |
+| `-d, --galaxydock_home` | 否 | GalaxyDock2_HEME主目录 | 自动检测 |
+| `--heme_res_num` | 否 | 血红素残基号 | None |
+| `--chain` | 否 | 蛋白链ID | None |
+| `-n, --n_workers` | 否 | 并行进程数 | 4 |
+| `--conda_env` | 否 | Conda环境名 | dock |
+| `--conda_base` | 否 | Conda安装路径 | 自动检测 |
+| `--keep_temp` | 否 | 保留临时拆分文件 | False |
+
+### 5.4 输出结构
+
+```
+docking_results/
+├── library_name_summary.csv      # 汇总CSV（按能量排序）
+├── library_name_top1_poses.mol2  # 所有分子的Top1构象
+├── failed_molecules.txt          # 失败的分子列表（如有）
+├── molecule_1/                   # 每个分子的子目录
+│   ├── box.pdb
+│   ├── contact.pdb
+│   ├── GD2_HEME_fb.E.info
+│   └── GD2_HEME_fb.mol2
+├── molecule_2/
+│   └── ...
+└── ...
+```
+
+### 5.5 汇总CSV格式
+
+| 列名 | 说明 |
+|------|------|
+| Rank | 排名（按能量） |
+| Molecule | 分子名称 |
+| Energy | 总能量 |
+| ATDK_E | AutoDock能量 |
+| INT_E | 内部能量 |
+| DS_E | DrugScore能量 |
+| HM_E | 血红素相互作用能 |
+| PLP | PLP打分 |
+
+### 5.6 运行所有数据库
+
+如果有多个配体库文件，可使用wrapper脚本一次性运行：
+
+```bash
+# 运行所有数据库，使用16个并行进程
+bash GalaxyDock2_HEME/script/run_all_databases.sh 16
+```
+
+---
+
+## 6. 结果分析
+
+### 6.1 查看能量排名
 
 ```bash
 head -20 docking_output/GD2_HEME_fb.E.info
 ```
 
-### 5.2 可视化对接结果
+### 6.2 可视化对接结果
 
 使用 PyMOL 查看：
 
@@ -192,7 +276,7 @@ select pose1, GD2_HEME_fb and state 1
 
 ---
 
-## 6. 常见问题
+## 7. 常见问题
 
 ### Q1: 日志中出现 "ERROR: failed in getting ang parm"
 
@@ -220,7 +304,7 @@ alter (name FE), elem='Fe'
 
 ---
 
-## 7. 参考文献
+## 8. 参考文献
 
 - GalaxyDock2-HEME: [论文链接]
 - UCSF Chimera: https://www.cgl.ucsf.edu/chimera/
