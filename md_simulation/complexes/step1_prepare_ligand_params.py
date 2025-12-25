@@ -1,0 +1,1 @@
+../scripts/step1_prepare_ligand_params.py

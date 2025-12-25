@@ -51,6 +51,7 @@ htmlcov/
 *.pdbqt
 *.pdb
 *.mol2
+*.frcmod*
 *.sdf
 *.xyz
 *.log
@@ -60,6 +61,16 @@ htmlcov/
 *.dpf
 *.gpf
 *.glg
+*.com
+*.fchk
+*.fingerprint
+*.prmtop
+*.inpcrd
+**/complexes/ligand_params
+**/complexes/systems*
+_deprecated
+results
+*.csv
 
 # Docking Results (keep templates, ignore bulk outputs)
 docking_results/
