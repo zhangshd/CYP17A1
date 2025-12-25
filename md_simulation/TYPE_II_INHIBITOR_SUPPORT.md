@@ -182,12 +182,50 @@ min/heat: 50 → eq1: 30 → eq2: 10 → prod: 0
 
 ---
 
+## 自动检测Type II抑制剂（v2.0新增）
+
+### 功能描述
+现在pipeline可以**自动识别Type II抑制剂**，无需手动配置`LIGAND_FE_COORDINATION`。
+
+### 检测算法
+```python
+def detect_type_ii_inhibitor(system_dir):
+    1. 读取complex_dry.pdb
+    2. 获取Fe原子坐标
+    3. 收集配体所有重原子（排除氢）
+    4. 计算每个原子到Fe的距离
+    5. 排序取最近的5个原子
+    6. 检查其中是否有N或O原子
+    7. 如果有且距离 < 4.0 Å → 识别为Type II抑制剂
+    8. 返回配位原子信息
+```
+
+### 检测结果
+| 配体 | 检测结果 | 配位原子 | Fe距离 |
+|------|---------|----------|--------|
+| AER601 | Type II | N22 (N) | 2.19 Å |
+| ligand_2546 | 非Type II | - | >4.0 Å |
+
+### 优先级
+1. 如果在`LIGAND_FE_COORDINATION`中有显式配置 → 使用配置
+2. 如果无配置 → 自动检测
+3. 如果检测到Type II → 自动添加约束
+4. 如果未检测到 → 不添加约束
+
+### 使用方法
+现在运行step3时会自动检测：
+```bash
+python3 step3_setup_md_simulation.py 新配体ID --force
+
+# 输出示例：
+# Auto-detected Type II inhibitor: N22 (N) at 2.19 Å from Fe
+```
+
+---
+
 ## 未来扩展
 
-1. **自动识别Type II抑制剂**：
-   - 扫描配体结构中的N/O原子
-   - 计算与Fe的距离
-   - 自动添加配位约束
+1. ~~**自动识别Type II抑制剂**~~ ✅ 已实现
 
 2. **更精确的约束参数**：
    - 根据量化计算优化目标距离

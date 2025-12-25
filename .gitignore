@@ -69,7 +69,7 @@ htmlcov/
 **/complexes/ligand_params
 **/complexes/systems*
 _deprecated
-results
+results*
 *.csv
 
 # Docking Results (keep templates, ignore bulk outputs)

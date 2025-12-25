@@ -26,10 +26,98 @@ from config import (
     FE_RESIDUE, LIGAND_RESIDUE, ensure_directories
 )
 
-try:
-    import parmed as pmd
-except ImportError:
-    pmd = None
+import math
+from typing import List, Tuple, Dict
+
+
+def detect_type_ii_inhibitor(system_dir: Path) -> Optional[Dict]:
+    """
+    Automatically detect if ligand is a Type II inhibitor by checking
+    if N/O atoms are among the 5 closest atoms to Fe.
+    
+    Type II inhibitors coordinate to Fe through N or O atoms at ~2.0-2.5 Å.
+    
+    Args:
+        system_dir: System directory containing complex_dry.pdb
+        
+    Returns:
+        Dict with coordination info if Type II, None otherwise.
+        Format: {"atom": atom_name, "distance": dist, "element": "N"/"O"}
+    """
+    from config import FE_RESIDUE, LIGAND_RESIDUE
+    
+    pdb_file = system_dir / "complex_dry.pdb"
+    
+    if not pdb_file.exists():
+        return None
+    
+    fe_coords = None
+    ligand_atoms = []  # List of (atom_name, element, x, y, z, atom_num)
+    
+    with open(pdb_file, 'r') as f:
+        for line in f:
+            if line.startswith(('ATOM', 'HETATM')):
+                atom_num = int(line[6:11].strip())
+                atom_name = line[12:16].strip()
+                res_num = int(line[22:26].strip())
+                x = float(line[30:38])
+                y = float(line[38:46])
+                z = float(line[46:54])
+                
+                # Get element from atom name (first 1-2 alphabetic characters)
+                element = ''.join(c for c in atom_name if c.isalpha())[:2]
+                if len(element) == 2:
+                    element = element[0].upper() + element[1].lower()
+                else:
+                    element = element.upper()
+                
+                # Find Fe atom
+                if res_num == FE_RESIDUE and atom_name == "FE":
+                    fe_coords = (x, y, z)
+                
+                # Collect ligand atoms (exclude hydrogens)
+                if res_num == LIGAND_RESIDUE and not element.startswith('H'):
+                    ligand_atoms.append((atom_name, element, x, y, z, atom_num))
+    
+    if fe_coords is None or not ligand_atoms:
+        return None
+    
+    # Calculate distances to Fe
+    distances = []
+    for atom_name, element, x, y, z, atom_num in ligand_atoms:
+        dist = math.sqrt(
+            (fe_coords[0] - x)**2 + 
+            (fe_coords[1] - y)**2 + 
+            (fe_coords[2] - z)**2
+        )
+        distances.append((atom_name, element, dist, atom_num))
+    
+    # Sort by distance and get 5 closest
+    distances.sort(key=lambda x: x[2])
+    closest_5 = distances[:5]
+    
+    # Check if any N or O atoms are among the 5 closest
+    coordination_candidates = []
+    for atom_name, element, dist, atom_num in closest_5:
+        if element in ('N', 'O'):
+            coordination_candidates.append({
+                "atom": atom_name,
+                "element": element,
+                "distance": dist,
+                "atom_num": atom_num
+            })
+    
+    if not coordination_candidates:
+        return None
+    
+    # Return the closest N/O atom
+    best_candidate = min(coordination_candidates, key=lambda x: x["distance"])
+    
+    # Only consider as Type II if distance is < 4.0 Å (coordination range)
+    if best_candidate["distance"] < 4.0:
+        return best_candidate
+    
+    return None
 
 
 def get_atom_number(system_dir: Path, residue_num: int, atom_name: str) -> Optional[int]:
@@ -78,6 +166,10 @@ def create_distance_restraint_file(
     """
     Create distance restraint file for Type II inhibitors (Fe-N coordination).
     
+    Supports both:
+    1. Explicit configuration in LIGAND_FE_COORDINATION
+    2. Automatic detection based on Fe-ligand distance analysis
+    
     Args:
         ligand_id: Ligand identifier
         output_dir: Output directory for restraint file
@@ -86,10 +178,6 @@ def create_distance_restraint_file(
     Returns:
         Path to restraint file, or None if not applicable
     """
-    # Check if this is a Type II inhibitor
-    if ligand_id not in LIGAND_FE_COORDINATION:
-        return None
-    
     # Get restraint force constant for this stage
     if stage not in FE_COORDINATION_RESTRAINT:
         return None
@@ -100,15 +188,33 @@ def create_distance_restraint_file(
     if force_const == 0.0:
         return None
     
-    # Get coordination parameters
-    coord_params = LIGAND_FE_COORDINATION[ligand_id]
-    coord_atom = coord_params["atom"]
-    target_dist = coord_params["target_dist"]
-    tolerance = coord_params.get("tolerance", 0.3)
+    # Check if explicit configuration exists
+    if ligand_id in LIGAND_FE_COORDINATION:
+        coord_params = LIGAND_FE_COORDINATION[ligand_id]
+        coord_atom = coord_params["atom"]
+        target_dist = coord_params["target_dist"]
+        tolerance = coord_params.get("tolerance", 0.3)
+        ligand_atom_num = get_atom_number(output_dir, LIGAND_RESIDUE, coord_atom)
+    else:
+        # Auto-detect Type II inhibitor
+        detection = detect_type_ii_inhibitor(output_dir)
+        
+        if detection is None:
+            # Not a Type II inhibitor
+            return None
+        
+        coord_atom = detection["atom"]
+        target_dist = detection["distance"]  # Use detected distance as target
+        tolerance = 0.3  # Default tolerance
+        ligand_atom_num = detection["atom_num"]
+        
+        # Only show message on first stage
+        if stage == "min1":
+            print(f"  Auto-detected Type II inhibitor: {coord_atom} ({detection['element']}) "
+                  f"at {target_dist:.2f} Å from Fe")
     
-    # Get absolute atom numbers from PDB file
+    # Get Fe atom number
     fe_atom_num = get_atom_number(output_dir, FE_RESIDUE, "FE")
-    ligand_atom_num = get_atom_number(output_dir, LIGAND_RESIDUE, coord_atom)
     
     if fe_atom_num is None or ligand_atom_num is None:
         print(f"Warning: Could not get atom numbers for Fe-{coord_atom} restraint")
