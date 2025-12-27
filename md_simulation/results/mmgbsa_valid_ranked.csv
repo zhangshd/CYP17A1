@@ -1,0 +1,5 @@
+Rank,Ligand_ID,Source,Delta_G_kcal_mol,Std_Dev,Fe_N_Distance_A,Centroid_Distance_A,Has_Nitrogen
+1,FeedAdd_556,feed_additive,-87.89,4.43,N/A,7.05,False
+2,FeedAdd_47,feed_additive,-81.36,3.64,N/A,6.43,False
+3,AER601,Reference,-61.12,3.10,3.49,8.75,True
+4,ChMed_2470,Ch_medicinal_DB,301.44,16.21,N/A,4.80,False

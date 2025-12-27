@@ -1,0 +1,34 @@
+source oldff/leaprc.ff14SB
+source leaprc.gaff
+source leaprc.water.opc
+addAtomTypes {
+        { "M1"  "Fe" "sp3" }
+        { "Y1"  "S" "sp3" }
+        { "Y2"  "N" "sp3" }
+        { "Y3"  "N" "sp3" }
+        { "Y4"  "N" "sp3" }
+        { "Y5"  "N" "sp3" }
+}
+CM1 = loadmol2 CM1.mol2
+HM1 = loadmol2 HM1.mol2
+FE1 = loadmol2 FE1.mol2
+loadamberparams HEM.frcmod
+loadamberparams frcmod.ionslm_126_opc
+loadamberparams pig_CYP17A1_mcpbpy.frcmod
+mol = loadpdb pig_CYP17A1_mcpbpy.pdb
+bond mol.412.SG mol.475.FE
+bond mol.474.NA mol.475.FE
+bond mol.474.NB mol.475.FE
+bond mol.474.NC mol.475.FE
+bond mol.474.ND mol.475.FE
+bond mol.411.C mol.412.N
+bond mol.412.C mol.413.N
+savepdb mol pig_CYP17A1_dry.pdb
+saveamberparm mol pig_CYP17A1_dry.prmtop pig_CYP17A1_dry.inpcrd
+solvatebox mol OPCBOX 10.0
+addions mol Na+ 0
+addions mol Cl- 0
+savepdb mol pig_CYP17A1_solv.pdb
+saveamberparm mol pig_CYP17A1_solv.prmtop pig_CYP17A1_solv.inpcrd
+quit
+ 

@@ -1,0 +1,32 @@
+Ligand_ID,Source,Prod_Frames,Expected_Frames,Fe_N_Distance_A,Centroid_Distance_A,Has_Nitrogen,Delta_G_kcal_mol,Std_Dev,Std_Err,Is_Valid,Validation_Notes
+AER601,Reference,5000,5000,3.49,8.75,True,-61.1151,3.0959,0.1385,True,OK
+ChMed_1332,Ch_medicinal_DB,5000,5000,N/A,26.90,False,-26.9186,2.8982,0.1296,False,Ligand dissociated (centroid dist=26.9 Å > 8.0 Å)
+ChMed_1788,Ch_medicinal_DB,5000,5000,N/A,9.61,False,-76.6121,4.0532,0.1813,False,Ligand dissociated (centroid dist=9.6 Å > 8.0 Å)
+ChMed_1789,Ch_medicinal_DB,5000,5000,N/A,9.81,False,-76.9482,4.4989,0.2012,False,Ligand dissociated (centroid dist=9.8 Å > 8.0 Å)
+ChMed_2470,Ch_medicinal_DB,5000,5000,N/A,4.80,False,301.4355,16.2142,0.7251,True,OK
+ChMed_2851,Ch_medicinal_DB,5000,5000,N/A,10.10,False,-97.7926,4.1099,0.1838,False,Ligand dissociated (centroid dist=10.1 Å > 8.0 Å)
+ChMed_3370,Ch_medicinal_DB,5000,5000,N/A,12.34,False,-85.8565,3.4668,0.1550,False,Ligand dissociated (centroid dist=12.3 Å > 8.0 Å)
+ChMed_5302,Ch_medicinal_DB,5000,5000,N/A,10.80,False,-48.8257,4.4197,0.1977,False,Ligand dissociated (centroid dist=10.8 Å > 8.0 Å)
+ChMed_5343,Ch_medicinal_DB,0,5000,N/A,N/A,False,0.0123,0.0233,0.0010,False,Incomplete trajectory (0/5000 frames); Could not calculate ligand-Fe distance
+ChMed_5859,Ch_medicinal_DB,5000,5000,N/A,9.13,False,-77.1977,5.5137,0.2466,False,Ligand dissociated (centroid dist=9.1 Å > 8.0 Å)
+FeedAdd_146,feed_additive,5000,5000,N/A,9.13,False,-77.5130,3.8769,0.1734,False,Ligand dissociated (centroid dist=9.1 Å > 8.0 Å)
+FeedAdd_237,feed_additive,0,5000,N/A,N/A,False,N/A,N/A,N/A,False,Incomplete trajectory (0/5000 frames); Could not calculate ligand-Fe distance; No MMGBSA result
+FeedAdd_44,feed_additive,5000,5000,N/A,9.92,False,-72.0308,3.8142,0.1706,False,Ligand dissociated (centroid dist=9.9 Å > 8.0 Å)
+FeedAdd_45,feed_additive,5000,5000,N/A,9.05,False,-78.3642,4.6626,0.2085,False,Ligand dissociated (centroid dist=9.0 Å > 8.0 Å)
+FeedAdd_46,feed_additive,5000,5000,N/A,10.54,False,-74.6763,5.4941,0.2457,False,Ligand dissociated (centroid dist=10.5 Å > 8.0 Å)
+FeedAdd_47,feed_additive,5000,5000,N/A,6.43,False,-81.3585,3.6361,0.1626,True,OK
+FeedAdd_556,feed_additive,5000,5000,N/A,7.05,False,-87.8907,4.4298,0.1981,True,OK
+FeedAdd_570,feed_additive,5000,5000,N/A,9.64,False,-68.8852,4.5489,0.2034,False,Ligand dissociated (centroid dist=9.6 Å > 8.0 Å)
+FeedAdd_584,feed_additive,0,5000,N/A,N/A,False,0.4248,0.2876,0.0129,False,Incomplete trajectory (0/5000 frames); Could not calculate ligand-Fe distance
+FeedAdd_696,feed_additive,5000,5000,N/A,12.46,False,-36.1140,5.1211,0.2290,False,Ligand dissociated (centroid dist=12.5 Å > 8.0 Å)
+GRAS_1015,gras_new,5000,5000,N/A,26.52,False,-25.8719,3.4949,0.1563,False,Ligand dissociated (centroid dist=26.5 Å > 8.0 Å)
+GRAS_2010,gras_new,5000,5000,N/A,8.48,False,-68.7571,3.6525,0.1633,False,Ligand dissociated (centroid dist=8.5 Å > 8.0 Å)
+GRAS_2397,gras_new,5000,5000,N/A,10.15,False,-61.6855,3.4071,0.1524,False,Ligand dissociated (centroid dist=10.1 Å > 8.0 Å)
+GRAS_2546,gras_new,0,5000,N/A,N/A,False,N/A,N/A,N/A,False,Incomplete trajectory (0/5000 frames); Could not calculate ligand-Fe distance; No MMGBSA result
+GRAS_325,gras_new,5000,5000,N/A,9.16,False,-62.5137,3.5673,0.1595,False,Ligand dissociated (centroid dist=9.2 Å > 8.0 Å)
+GRAS_338,gras_new,5000,5000,N/A,22.88,False,-18.9648,3.3536,0.1500,False,Ligand dissociated (centroid dist=22.9 Å > 8.0 Å)
+GRAS_467,gras_new,5000,5000,7.27,7.94,True,-52.2756,3.5008,0.1566,False,"Fe-N coordination lost (dist=7.27 Å > 3.5 Å, expected 2.1-2.3 Å)"
+GRAS_519,gras_new,5000,5000,N/A,12.39,False,-59.9638,3.5432,0.1585,False,Ligand dissociated (centroid dist=12.4 Å > 8.0 Å)
+GRAS_573,gras_new,5000,5000,N/A,9.10,False,-60.3236,3.9671,0.1774,False,Ligand dissociated (centroid dist=9.1 Å > 8.0 Å)
+GRAS_987,gras_new,5000,5000,N/A,13.26,False,-50.0386,3.4054,0.1523,False,Ligand dissociated (centroid dist=13.3 Å > 8.0 Å)
+all_pdbs,unknown,0,5000,N/A,N/A,False,N/A,N/A,N/A,False,Incomplete trajectory (0/5000 frames); Could not calculate ligand-Fe distance; No MMGBSA result

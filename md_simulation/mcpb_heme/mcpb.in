@@ -1,0 +1,38 @@
+# MCPB.py input file for Pig CYP17A1 Heme-Fe-Cys
+# Ferric (Fe3+) penta-coordinate high-spin state
+# Based on AMBER Tutorial for HEME parameterization
+
+original_pdb pig_CYP17A1_mcpb.pdb
+group_name pig_CYP17A1
+cut_off 2.8
+
+# Iron center - Fe3+ high-spin (S=5/2, sextet)
+ion_ids 7675
+ion_mol2files FE.mol2
+
+# Non-amino acid residues: HEM
+naa_mol2files HEM.mol2
+
+# Force field modification files
+frcmod_files HEM.frcmod
+
+# QM calculation settings
+software_version g16
+force_field ff14SB
+
+# Optimize hydrogen positions in large model
+large_opt 1
+
+# Total charge of metal site: Fe3+ + HEM(-4) + CYM(-1) = -2
+# Multiplicity: 6 (sextet, high-spin Fe3+)
+# These will be automatically determined, but can be overridden:
+# smmodel_chg -2
+# lgmodel_chg -2
+
+# Override charge and spin for Fe3+ high-spin P450
+# Total charge: Fe3+(+3) + HEM(-4) + CYM(-1) = -2
+# Multiplicity: 6 (sextet, S=5/2 for Fe3+ high-spin)
+smmodel_chg -2
+smmodel_spin 6
+lgmodel_chg -2
+lgmodel_spin 6

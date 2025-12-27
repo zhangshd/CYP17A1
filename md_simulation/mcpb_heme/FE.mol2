@@ -1,0 +1,9 @@
+@<TRIPOS>MOLECULE
+FE
+ 1 0 0 0 0
+SMALL
+NO_CHARGES
+
+@<TRIPOS>ATOM
+      1 FE          16.5220    7.9590  -62.7120 FE        1 FE         0.0000
+@<TRIPOS>BOND

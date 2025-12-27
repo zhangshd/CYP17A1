@@ -306,7 +306,7 @@ def build_complex_topology(
         # Convert to mol2-like format (add dummy atom type)
         orig_atoms = [(name, x, y, z, "") for name, x, y, z in orig_atoms_pdb]
     else:
-        orig_atoms = read_mol2_coordinates(ligand_mol2)
+    orig_atoms = read_mol2_coordinates(ligand_mol2)
     
     if len(param_atoms) != len(orig_atoms):
         print(f"  ERROR: Atom count mismatch between param ({len(param_atoms)}) and original ({len(orig_atoms)})")

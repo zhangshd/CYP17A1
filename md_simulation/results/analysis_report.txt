@@ -1,0 +1,58 @@
+================================================================================
+CYP17A1 Virtual Screening - MM/GBSA Analysis Report
+================================================================================
+
+Total systems analyzed: 31
+Valid systems: 4
+Invalid systems: 27
+
+--------------------------------------------------------------------------------
+VALID RESULTS (Ranked by ΔG)
+--------------------------------------------------------------------------------
+Rank  Ligand ID           Source            ΔG (kcal/mol)  Fe-N (Å)  Centroid (Å)  
+--------------------------------------------------------------------------------
+1     FeedAdd_556         feed_additive     -87.89         N/A       7.05          
+2     FeedAdd_47          feed_additive     -81.36         N/A       6.43          
+3     AER601              Reference         -61.12         3.49      8.75          
+4     ChMed_2470          Ch_medicinal_DB   301.44         N/A       4.80          
+
+--------------------------------------------------------------------------------
+INVALID RESULTS (Need Investigation)
+--------------------------------------------------------------------------------
+ChMed_1332: Ligand dissociated (centroid dist=26.9 Å > 8.0 Å)
+ChMed_1788: Ligand dissociated (centroid dist=9.6 Å > 8.0 Å)
+ChMed_1789: Ligand dissociated (centroid dist=9.8 Å > 8.0 Å)
+ChMed_2851: Ligand dissociated (centroid dist=10.1 Å > 8.0 Å)
+ChMed_3370: Ligand dissociated (centroid dist=12.3 Å > 8.0 Å)
+ChMed_5302: Ligand dissociated (centroid dist=10.8 Å > 8.0 Å)
+ChMed_5343: Incomplete trajectory (0/5000 frames); Could not calculate ligand-Fe distance
+ChMed_5859: Ligand dissociated (centroid dist=9.1 Å > 8.0 Å)
+FeedAdd_146: Ligand dissociated (centroid dist=9.1 Å > 8.0 Å)
+FeedAdd_237: Incomplete trajectory (0/5000 frames); Could not calculate ligand-Fe distance; No MMGBSA result
+FeedAdd_44: Ligand dissociated (centroid dist=9.9 Å > 8.0 Å)
+FeedAdd_45: Ligand dissociated (centroid dist=9.0 Å > 8.0 Å)
+FeedAdd_46: Ligand dissociated (centroid dist=10.5 Å > 8.0 Å)
+FeedAdd_570: Ligand dissociated (centroid dist=9.6 Å > 8.0 Å)
+FeedAdd_584: Incomplete trajectory (0/5000 frames); Could not calculate ligand-Fe distance
+FeedAdd_696: Ligand dissociated (centroid dist=12.5 Å > 8.0 Å)
+GRAS_1015: Ligand dissociated (centroid dist=26.5 Å > 8.0 Å)
+GRAS_2010: Ligand dissociated (centroid dist=8.5 Å > 8.0 Å)
+GRAS_2397: Ligand dissociated (centroid dist=10.1 Å > 8.0 Å)
+GRAS_2546: Incomplete trajectory (0/5000 frames); Could not calculate ligand-Fe distance; No MMGBSA result
+GRAS_325: Ligand dissociated (centroid dist=9.2 Å > 8.0 Å)
+GRAS_338: Ligand dissociated (centroid dist=22.9 Å > 8.0 Å)
+GRAS_467: Fe-N coordination lost (dist=7.27 Å > 3.5 Å, expected 2.1-2.3 Å)
+GRAS_519: Ligand dissociated (centroid dist=12.4 Å > 8.0 Å)
+GRAS_573: Ligand dissociated (centroid dist=9.1 Å > 8.0 Å)
+GRAS_987: Ligand dissociated (centroid dist=13.3 Å > 8.0 Å)
+all_pdbs: Incomplete trajectory (0/5000 frames); Could not calculate ligand-Fe distance; No MMGBSA result
+
+================================================================================
+VALIDATION CRITERIA
+================================================================================
+- Expected trajectory frames: 5000
+- Fe-N coordination distance threshold: 3.5 Å (for Type II inhibitors with N)
+  (Expected Fe-N distance for stable coordination: 2.1-2.3 Å)
+- Ligand centroid distance threshold: 8.0 Å (fallback for non-N ligands)
+- Distance exceeding threshold indicates ligand dissociation from active site
+

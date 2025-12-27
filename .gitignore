@@ -69,9 +69,7 @@ htmlcov/
 **/complexes/ligand_params
 **/complexes/systems*
 _deprecated
-results*
 *.csv
-
 # Docking Results (keep templates, ignore bulk outputs)
 docking_results/
 screening_output/
@@ -102,5 +100,20 @@ Thumbs.db
 .DS_Store
 
 # Logs
-*.log
 logs/
+
+**/result*/*
+
+!md_simulation/mcpb_heme/*.inpcrd
+!md_simulation/mcpb_heme/*.prmtop
+!md_simulation/mcpb_heme/*.pdb
+!md_simulation/mcpb_heme/*.frcmod
+!md_simulation/mcpb_heme/*.frcmod.original
+!md_simulation/mcpb_heme/*.mol2
+!md_simulation/mcpb_heme/*.in
+!md_simulation/mcpb_heme/*.fingerprint
+!md_simulation/mcpb_heme/*.com
+!md_simulation/mcpb_heme/*.log
+!md_simulation/results/analysis_report.txt
+!md_simulation/results/mmgbsa_analysis_full.csv
+!md_simulation/results/mmgbsa_valid_ranked.csv
