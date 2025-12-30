@@ -102,7 +102,7 @@ Thumbs.db
 # Logs
 logs/
 
-**/result*/*
+**/*result*/*
 
 !md_simulation/mcpb_heme/*.inpcrd
 !md_simulation/mcpb_heme/*.prmtop
