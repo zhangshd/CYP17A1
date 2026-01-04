@@ -36,8 +36,8 @@ MCPB_LIB = None  # Not using lib file, loading mol2 directly
 SCRIPTS_DIR = MD_BASE / "scripts"
 COMPLEXES_DIR = MD_BASE / "complexes"  # Base directory for MD systems
 LIGAND_PARAMS_DIR = COMPLEXES_DIR / "ligand_params"  # Under complexes/
-SYSTEMS_DIR = COMPLEXES_DIR / "systems_gpu"  # GPU-based systems (main working directory)
-RESULTS_DIR = MD_BASE / "results"
+SYSTEMS_DIR = COMPLEXES_DIR / "systems_round2"  # GPU-based systems (main working directory)
+RESULTS_DIR = MD_BASE / "results"/"round2"
 
 # ============================================================================
 # AMBER Environment
@@ -47,7 +47,7 @@ AMBER_SOURCE_CMD = f"source {AMBER_HOME}/amber.sh"
 
 # SLURM configuration (GPU-based execution)
 SLURM_CONFIG = {
-    "partition": "G4090",
+    "partition": "GA30",
     "nodes": 1,
     "ntasks": 1,
     "cpus_per_task": 16,

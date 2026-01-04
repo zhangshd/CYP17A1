@@ -12,7 +12,7 @@
 # Date: 2024-12-25
 # ============================================================================
 
-SYSTEMS_DIR="/home/zhangsd/repos/CYP17A1/md_simulation/complexes/systems_gpu"
+SYSTEMS_DIR="/home/zhangsd/repos/CYP17A1/md_simulation/complexes/systems_round2"
 CHECK_SCRIPT="./check_md_progress.sh"
 PROBLEMS_ONLY=0
 

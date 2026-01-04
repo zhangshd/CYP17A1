@@ -398,7 +398,7 @@ NPT equilibration with backbone restraints
     # Stage 2: Without restraints (10 x 50ps sub-stages)
     # All stages have ntr=0 (no positional restraints)
     for i in range(1, num_stages + 1):
-            eq2_stage = f"""# Equilibration Stage 2.{i}: NPT without restraints (50ps)
+        eq2_stage = f"""# Equilibration Stage 2.{i}: NPT without restraints (50ps)
 NPT equilibration without restraints - sub-stage {i}/{num_stages}
  &cntrl
   imin=0,                   ! MD
@@ -551,7 +551,7 @@ check_error "eq1"
         else:
             prev_rst = f"eq2_{i-1:02d}.rst7"
         
-            script += f"""
+        script += f"""
 # Stage 5.{i}: Equilibration without restraints - sub-stage {i}/{num_eq2}
 echo "Starting equilibration stage 2.{i}..."
 $EXE -O -i eq2_{i:02d}.in -o eq2_{i:02d}.out -p $PRMTOP -c {prev_rst} -r eq2_{i:02d}.rst7 -x eq2_{i:02d}.nc

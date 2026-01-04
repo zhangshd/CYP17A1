@@ -141,16 +141,22 @@ def get_docked_mol2_path(db_name: str, mol_index: int) -> Optional[Path]:
     return None
 
 
-def load_top_molecules_from_summary(db_name: str, top_n: int = 10) -> List[int]:
+def load_top_molecules_from_summary(
+    db_name: str, 
+    top_n: int = 10, 
+    start_rank: int = 1
+) -> List[int]:
     """
-    Load top N molecule indices from database summary CSV.
+    Load molecule indices from database summary CSV based on rank range.
     
     The CSV is already sorted by docking score (best first).
     Molecule column format: "gras_new_ligprep.sdf_1015" -> extract 1015
     
     Args:
         db_name: Database name
-        top_n: Number of top molecules to return
+        top_n: Number of molecules to return
+        start_rank: Starting rank (1-based, inclusive). 
+                    E.g., start_rank=11, top_n=10 returns ranks 11-20.
         
     Returns:
         List of molecule indices (1-based), deduplicated
@@ -173,9 +179,10 @@ def load_top_molecules_from_summary(db_name: str, top_n: int = 10) -> List[int]:
     
     summary_file = summary_pattern[0]
     
-    # Parse CSV and extract top N molecule indices (deduplicated)
+    # Parse CSV and extract molecule indices based on rank range (deduplicated)
     molecules = []
     seen = set()
+    current_rank = 0  # Tracks deduplicated rank
     
     with open(summary_file, 'r') as f:
         reader = csv.DictReader(f)
@@ -189,6 +196,12 @@ def load_top_molecules_from_summary(db_name: str, top_n: int = 10) -> List[int]:
                 mol_idx = int(match.group(1))
                 if mol_idx not in seen:
                     seen.add(mol_idx)
+                    current_rank += 1
+                    
+                    # Skip molecules before start_rank
+                    if current_rank < start_rank:
+                        continue
+                    
                     molecules.append(mol_idx)
                     if len(molecules) >= top_n:
                         break
@@ -427,7 +440,13 @@ def main():
         "--top-n", "-n",
         type=int,
         default=10,
-        help="Number of top molecules to process from each database (default: 10)"
+        help="Number of molecules to process from each database (default: 10)"
+    )
+    parser.add_argument(
+        "--start-rank",
+        type=int,
+        default=1,
+        help="Starting rank (1-based). E.g., --start-rank 11 --top-n 10 selects ranks 11-20 (default: 1)"
     )
     parser.add_argument(
         "--database", "-d",
@@ -483,8 +502,9 @@ def main():
             mol_indices = [int(x.strip()) for x in args.indices.split(",")]
         else:
             # Load from summary CSV
-            print(f"\nLoading top-{args.top_n} molecules from {db_name}...")
-            mol_indices = load_top_molecules_from_summary(db_name, args.top_n)
+            end_rank = args.start_rank + args.top_n - 1
+            print(f"\nLoading rank {args.start_rank}-{end_rank} molecules from {db_name}...")
+            mol_indices = load_top_molecules_from_summary(db_name, args.top_n, args.start_rank)
         
         for mol_idx in mol_indices:
             ligand_id = f"{prefix}_{mol_idx}"
