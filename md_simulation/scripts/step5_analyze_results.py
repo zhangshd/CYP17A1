@@ -404,26 +404,216 @@ def print_summary(results: List[SystemAnalysis]):
             print(f"  ... and {len(invalid_results) - 5} more")
 
 
+def export_key_frames(ligand_ids: List[str] = None) -> List[str]:
+    """
+    Export key frames (min, heat, eq, prod) as PDB without water.
+    
+    Replaces export_key_frames.sh functionality.
+    
+    Args:
+        ligand_ids: List of ligand IDs to process, or None for all
+        
+    Returns:
+        List of successfully processed ligand IDs
+    """
+    STAGES = ["min1", "min2", "heat", "eq1"] + [f"eq2_{i:02d}" for i in range(1, 11)]
+    
+    if ligand_ids is None:
+        # Get all ligand directories
+        if not SYSTEMS_DIR.exists():
+            print(f"ERROR: SYSTEMS_DIR not found: {SYSTEMS_DIR}")
+            return []
+        ligand_ids = sorted([d.name for d in SYSTEMS_DIR.iterdir() if d.is_dir()])
+    
+    processed = []
+    env = os.environ.copy()
+    env["LD_LIBRARY_PATH"] = f"/opt/share/fftw/lib:{env.get('LD_LIBRARY_PATH', '')}"
+    
+    print(f"\nExporting key frames for {len(ligand_ids)} systems...")
+    print("-" * 60)
+    
+    for ligand_id in ligand_ids:
+        system_dir = SYSTEMS_DIR / ligand_id
+        if not system_dir.exists():
+            print(f"  [{ligand_id}] SKIP: Directory not found")
+            continue
+        
+        prmtop = system_dir / "complex_solv.prmtop"
+        if not prmtop.exists():
+            print(f"  [{ligand_id}] SKIP: No topology file")
+            continue
+        
+        print(f"  [{ligand_id}] Processing...", end=" ", flush=True)
+        exported_count = 0
+        
+        # Export each stage
+        for stage in STAGES:
+            rst_file = system_dir / f"{stage}.rst7"
+            if not rst_file.exists():
+                continue
+            
+            cpptraj_script = f"""parm {prmtop}
+trajin {rst_file}
+strip :WAT,HOH,Na+,Cl-
+trajout {system_dir / f'{stage}.pdb'} pdb
+go
+"""
+            result = subprocess.run(
+                [f"{AMBER_HOME}/bin/cpptraj"],
+                input=cpptraj_script,
+                capture_output=True,
+                text=True,
+                env=env
+            )
+            if result.returncode == 0:
+                exported_count += 1
+        
+        # Export sampled production trajectory
+        prod_nc = system_dir / "prod.nc"
+        if prod_nc.exists():
+            cpptraj_script = f"""parm {prmtop}
+trajin {prod_nc} 1 5000 500
+strip :WAT,HOH,Na+,Cl-
+trajout {system_dir / 'prod_sampled.pdb'} pdb
+go
+"""
+            result = subprocess.run(
+                [f"{AMBER_HOME}/bin/cpptraj"],
+                input=cpptraj_script,
+                capture_output=True,
+                text=True,
+                env=env
+            )
+            if result.returncode == 0:
+                exported_count += 1
+        
+        if exported_count > 0:
+            print(f"OK ({exported_count} frames)")
+            processed.append(ligand_id)
+        else:
+            print("No frames exported")
+    
+    print(f"\nExported key frames for {len(processed)} systems")
+    return processed
+
+
+def pack_all_pdbs(output_name: str = "all_pdbs_keyframes.tar.gz") -> Optional[Path]:
+    """
+    Pack all PDB files into a single archive, organized by ligand folder.
+    
+    Replaces pack_all_pdbs.sh functionality.
+    
+    Args:
+        output_name: Name of the output archive
+        
+    Returns:
+        Path to created archive, or None on failure
+    """
+    import shutil
+    import tarfile
+    
+    if not SYSTEMS_DIR.exists():
+        print(f"ERROR: SYSTEMS_DIR not found: {SYSTEMS_DIR}")
+        return None
+    
+    # Create temporary directory for organizing PDBs
+    all_pdbs_dir = SYSTEMS_DIR / "all_pdbs"
+    if all_pdbs_dir.exists():
+        shutil.rmtree(all_pdbs_dir)
+    all_pdbs_dir.mkdir()
+    
+    print(f"\nPacking PDB files from {SYSTEMS_DIR}...")
+    print("-" * 60)
+    
+    ligand_count = 0
+    pdb_count = 0
+    
+    for system_dir in sorted(SYSTEMS_DIR.iterdir()):
+        if not system_dir.is_dir() or system_dir.name == "all_pdbs":
+            continue
+        
+        ligand_id = system_dir.name
+        pdb_files = list(system_dir.glob("*.pdb"))
+        
+        if not pdb_files:
+            continue
+        
+        # Create ligand subfolder
+        ligand_pdb_dir = all_pdbs_dir / ligand_id
+        ligand_pdb_dir.mkdir()
+        
+        # Copy PDB files
+        for pdb in pdb_files:
+            shutil.copy2(pdb, ligand_pdb_dir / pdb.name)
+            pdb_count += 1
+        
+        ligand_count += 1
+        print(f"  [{ligand_id}] {len(pdb_files)} PDB files")
+    
+    # Create tar.gz archive
+    archive_path = SYSTEMS_DIR / output_name
+    
+    print(f"\nCreating archive: {archive_path}")
+    with tarfile.open(archive_path, "w:gz") as tar:
+        tar.add(all_pdbs_dir, arcname="all_pdbs")
+    
+    # Clean up temporary directory
+    shutil.rmtree(all_pdbs_dir)
+    
+    print(f"\nPacked {pdb_count} PDB files from {ligand_count} systems")
+    print(f"Archive: {archive_path} ({archive_path.stat().st_size / 1024 / 1024:.1f} MB)")
+    
+    return archive_path
+
+
 def main():
     """Main entry point."""
     import sys
     
     # Parse arguments
     if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
-        print("Usage: python step5_analyze_results.py [ligand_id ...]")
+        print("Usage: python step5_analyze_results.py [OPTIONS] [ligand_id ...]")
         print("\nAnalyze MD simulation results and validate MM/GBSA calculations.")
         print("\nOptions:")
-        print("  No arguments    Analyze all systems in SYSTEMS_DIR")
-        print("  ligand_id ...   Analyze specific systems")
+        print("  No arguments        Analyze all systems in SYSTEMS_DIR")
+        print("  ligand_id ...       Analyze specific systems")
+        print("  --export-frames     Export key frames as PDB (strip water)")
+        print("  --pack-pdbs         Pack all PDB files into tar.gz archive")
+        print("\nExamples:")
+        print("  python step5_analyze_results.py                    # Analyze all")
+        print("  python step5_analyze_results.py --export-frames    # Export frames for all")
+        print("  python step5_analyze_results.py --pack-pdbs        # Pack all PDbs")
+        print("  python step5_analyze_results.py GRAS_1206 --export-frames  # Export for specific ligand")
         sys.exit(0)
+    
+    # Check for special modes
+    export_frames = "--export-frames" in sys.argv
+    pack_pdbs = "--pack-pdbs" in sys.argv
+    
+    # Filter out flags to get ligand IDs
+    ligand_ids = [a for a in sys.argv[1:] if not a.startswith("-")]
     
     ensure_directories()
     
-    # Analyze systems
-    if len(sys.argv) > 1:
+    # Handle export frames mode
+    if export_frames:
+        if ligand_ids:
+            export_key_frames(ligand_ids)
+        else:
+            export_key_frames()
+        if not pack_pdbs:
+            return
+    
+    # Handle pack PDbs mode
+    if pack_pdbs:
+        pack_all_pdbs()
+        return
+    
+    # Normal analysis mode
+    if ligand_ids:
         # Analyze specific systems
         results = []
-        for ligand_id in sys.argv[1:]:
+        for ligand_id in ligand_ids:
             analysis = analyze_system(ligand_id)
             if analysis:
                 results.append(analysis)
@@ -450,3 +640,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

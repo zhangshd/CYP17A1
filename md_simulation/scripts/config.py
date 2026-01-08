@@ -7,13 +7,14 @@ Date: 2024-12-17
 
 from pathlib import Path
 from typing import Dict, Any
+import os
 
 # ============================================================================
 # Directory Structure
 # ============================================================================
 
-# Base directories (absolute paths)
-PROJECT_ROOT = Path("/home/zhangsd/repos/CYP17A1")
+# Base directories (relative paths)
+PROJECT_ROOT = Path(os.path.abspath(__file__)).parent.parent.parent
 MD_BASE = PROJECT_ROOT / "md_simulation"
 
 # Input data directories
