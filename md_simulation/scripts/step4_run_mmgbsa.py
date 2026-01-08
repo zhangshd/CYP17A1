@@ -297,26 +297,157 @@ def parse_mmgbsa_result(result_file: Path) -> Optional[Tuple[float, float, float
     return None
 
 
+def find_ready_ligands(force: bool = False) -> list:
+    """
+    Find all ligand directories ready for MM/GBSA analysis.
+    
+    Requirements:
+    - Has complex_solv.prmtop (topology exists)
+    - Has prod.nc (MD simulation completed)
+    - Optionally: No run_mmgbsa.sh yet (if not force)
+    
+    Returns:
+        List of ligand_id strings
+    """
+    ready_ligands = []
+    
+    if not SYSTEMS_DIR.exists():
+        print(f"ERROR: SYSTEMS_DIR not found: {SYSTEMS_DIR}")
+        return []
+    
+    for system_dir in sorted(SYSTEMS_DIR.iterdir()):
+        if not system_dir.is_dir():
+            continue
+        
+        ligand_id = system_dir.name
+        
+        # Check required files
+        prmtop = system_dir / "complex_solv.prmtop"
+        prod_nc = system_dir / "prod.nc"
+        mmgbsa_script = system_dir / "run_mmgbsa.sh"
+        
+        if not prmtop.exists():
+            continue  # No topology
+        
+        if not prod_nc.exists():
+            continue  # MD not completed
+        
+        # Skip if already setup (unless force)
+        if not force and mmgbsa_script.exists():
+            continue
+        
+        ready_ligands.append(ligand_id)
+    
+    return ready_ligands
+
+
 def main():
-    """Standalone test."""
+    """Main entry point with batch processing support."""
     import sys
+    import subprocess
     
-    if len(sys.argv) < 2:
-        print("Usage: python step4_run_mmgbsa.py <ligand_id> [--force]")
-        sys.exit(1)
-    
-    ligand_id = sys.argv[1]
     force = "--force" in sys.argv or "-f" in sys.argv
+    submit = "--submit" in sys.argv or "-s" in sys.argv
     
-    success = setup_mmgbsa_analysis(ligand_id, force=force)
+    # Filter out flags to get positional arguments
+    args = [a for a in sys.argv[1:] if not a.startswith("-")]
     
-    if success:
-        print(f"\nTo submit MM/GBSA job:")
-        print(f"  cd {SYSTEMS_DIR / ligand_id}")
-        print(f"  sbatch run_mmgbsa.sh")
+    if len(args) >= 1:
+        # Process single ligand
+        ligand_id = args[0]
+        success = setup_mmgbsa_analysis(ligand_id, force=force)
+        
+        if success:
+            if submit:
+                system_dir = SYSTEMS_DIR / ligand_id
+                result = subprocess.run(
+                    ["sbatch", "run_mmgbsa.sh"],
+                    cwd=system_dir,
+                    capture_output=True,
+                    text=True
+                )
+                if result.returncode == 0:
+                    print(f"  SUBMITTED: {result.stdout.strip()}")
+                else:
+                    print(f"  SUBMIT FAILED: {result.stderr}")
+            else:
+                print(f"\nTo submit MM/GBSA job:")
+                print(f"  cd {SYSTEMS_DIR / ligand_id}")
+                print(f"  sbatch run_mmgbsa.sh")
+        else:
+            print("\nMM/GBSA setup failed!")
+            sys.exit(1)
     else:
-        print("\nMM/GBSA setup failed!")
-        sys.exit(1)
+        # Batch mode: process all ready ligands
+        print("=" * 60)
+        print("MM/GBSA Batch Setup")
+        print("=" * 60)
+        print(f"Scanning: {SYSTEMS_DIR}")
+        print(f"Force overwrite: {force}")
+        print(f"Auto submit: {submit}")
+        print()
+        
+        ready_ligands = find_ready_ligands(force=force)
+        
+        if not ready_ligands:
+            print("No ligands ready for MM/GBSA analysis.")
+            print("Requirements: complex_solv.prmtop + prod.nc exist")
+            if not force:
+                print("Use --force to overwrite existing run_mmgbsa.sh")
+            sys.exit(0)
+        
+        print(f"Found {len(ready_ligands)} ligands ready for MM/GBSA:")
+        for lid in ready_ligands:
+            print(f"  - {lid}")
+        print()
+        
+        # Process each ligand
+        success_count = 0
+        submitted_count = 0
+        failed = []
+        
+        for ligand_id in ready_ligands:
+            print(f"\n{'='*60}")
+            print(f"Processing: {ligand_id}")
+            print(f"{'='*60}")
+            
+            if setup_mmgbsa_analysis(ligand_id, force=force):
+                success_count += 1
+                
+                # Submit if requested
+                if submit:
+                    system_dir = SYSTEMS_DIR / ligand_id
+                    result = subprocess.run(
+                        ["sbatch", "run_mmgbsa.sh"],
+                        cwd=system_dir,
+                        capture_output=True,
+                        text=True
+                    )
+                    if result.returncode == 0:
+                        print(f"  SUBMITTED: {result.stdout.strip()}")
+                        submitted_count += 1
+                    else:
+                        print(f"  SUBMIT FAILED: {result.stderr}")
+            else:
+                failed.append(ligand_id)
+        
+        # Summary
+        print(f"\n{'='*60}")
+        print("SUMMARY")
+        print(f"{'='*60}")
+        print(f"Successful: {success_count}/{len(ready_ligands)}")
+        
+        if submit:
+            print(f"Submitted: {submitted_count}/{success_count}")
+        
+        if failed:
+            print(f"Failed: {', '.join(failed)}")
+        
+        if success_count > 0 and not submit:
+            print(f"\nTo submit all MM/GBSA jobs:")
+            print(f"  cd {SYSTEMS_DIR}")
+            print(f"  for d in */; do (cd \"$d\" && sbatch run_mmgbsa.sh); done")
+            print(f"\nOr re-run with --submit to auto-submit:")
 
 
 if __name__ == "__main__":
